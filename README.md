@@ -8,7 +8,7 @@ Este proyecto fue desarrollado como herramienta didáctica para un profesor/curs
 
 ## 🔗 Demo en vivo
 
-- **App (Vercel/Netlify):** *(sustituir por tu URL tras desplegar)*
+- **App:** https://baciloscopia-interactiva-5peckbz08.vercel.app
 
 ## Preview
 
