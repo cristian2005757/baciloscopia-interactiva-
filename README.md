@@ -14,7 +14,6 @@ Este proyecto fue desarrollado como herramienta didáctica para un profesor/curs
 
 ![Vista principal](public/assets/muestra.png)
 
-> Para que la imagen se vea, coloca una captura de pantalla en `public/assets/muestra.png`.
 
 ## ¿Qué permite hacer?
 
