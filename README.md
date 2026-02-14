@@ -10,6 +10,12 @@ Este proyecto fue desarrollado como herramienta didáctica para un profesor/curs
 
 - **App (Vercel/Netlify):** *(sustituir por tu URL tras desplegar)*
 
+## Preview
+
+![Vista principal](public/assets/muestra.png)
+
+> Para que la imagen se vea, coloca una captura de pantalla en `public/assets/muestra.png`.
+
 ## ¿Qué permite hacer?
 
 - Practicar por **niveles** (6 campos microscópicos) con dificultad creciente.
@@ -36,7 +42,7 @@ Este proyecto fue desarrollado como herramienta didáctica para un profesor/curs
 /
 ├── index.html              # App principal
 ├── public/
-│   └── assets/             # Imágenes de los campos (imagen1.jpeg, imagen2.jpeg, ...)
+│   └── assets/             # Imágenes: muestra.png (preview README), imagen1.jpeg, etc.
 ├── src/tools/
 │   └── detector.html       # Herramienta para extraer coordenadas de bacilos
 └── package.json
