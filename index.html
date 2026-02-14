@@ -1,0 +1,923 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Baciloscopía Interactiva - Simulador de práctica</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg: #0b1220;
+            --panel: #0f1a2e;
+            --card: #111f38;
+            --text: #e7eefc;
+            --muted: #a7b4d0;
+            --accent: #00d9ff;
+            --accent2: #22c55e;
+            --danger: #ff4d4d;
+            --radius: 16px;
+        }
+
+        * { box-sizing: border-box; }
+
+        body {
+            margin: 0;
+            font-family: Inter, system-ui, -apple-system, Arial, sans-serif;
+            background: radial-gradient(1200px 600px at 10% 10%, #142b55 0%, transparent 55%), var(--bg);
+            color: var(--text);
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 24px;
+        }
+
+        .app {
+            width: 100%;
+        }
+
+        h1 { margin: 0; font-size: 20px; }
+        .subtitle { margin: 8px 0 0; color: var(--muted); font-size: 13px; }
+
+        .top-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 14px;
+            gap: 8px;
+        }
+
+        .level-badge {
+            background: linear-gradient(135deg, var(--accent), var(--accent2));
+            color: #001018;
+            padding: 6px 14px;
+            border-radius: 999px;
+            font-size: 13px;
+            font-weight: 600;
+            white-space: nowrap;
+        }
+
+        .btn {
+            border: none;
+            padding: 10px 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 13px;
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--text);
+        }
+
+        .btn:hover { filter: brightness(1.08); }
+
+        .btn.primary, .btn-primary {
+            background: var(--accent);
+            color: #001018;
+        }
+
+        .layout, .grid {
+            display: grid;
+            grid-template-columns: 1.3fr 0.7fr;
+            gap: 18px;
+            margin-top: 18px;
+        }
+
+        .card {
+            background: rgba(17, 31, 56, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius);
+            padding: 16px;
+        }
+
+        .small { color: var(--muted); font-size: 13px; }
+
+        .imgWrap { position: relative; width: 100%; }
+
+        #imgMuestra {
+            width: 100%;
+            border-radius: 14px;
+            display: block;
+            cursor: crosshair;
+        }
+
+        #overlay {
+            position: absolute;
+            inset: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+        }
+
+        .toolbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .btn.danger {
+            background: rgba(255, 77, 77, 0.12);
+            border: 1px solid rgba(255, 77, 77, 0.35);
+            color: #ffd1d1;
+        }
+
+        .btn.danger:hover { filter: brightness(1.15); }
+
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, minmax(0, 1fr));
+            gap: 8px;
+            margin-top: 6px;
+        }
+
+        .stat {
+            background: rgba(17, 31, 56, 0.6);
+            border-radius: 14px;
+            padding: 8px 10px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .stat-label {
+            font-size: 11px;
+            text-transform: uppercase;
+            letter-spacing: .08em;
+            color: var(--muted);
+        }
+
+        .stat-value {
+            font-size: 16px;
+            font-weight: 700;
+            margin-top: 2px;
+        }
+
+        .stat-value.good {
+            color: var(--accent2);
+        }
+
+        .stat-value.bad {
+            color: var(--danger);
+        }
+
+        .controls {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .badge-small {
+            font-size: 11px;
+            padding: 2px 8px;
+            border-radius: 999px;
+            background: rgba(0, 217, 255, 0.12);
+            color: var(--accent);
+            display: inline-block;
+            margin-top: 4px;
+        }
+
+        .report-section h3 {
+            margin-top: 0;
+            font-size: 15px;
+        }
+
+        .report-row {
+            font-size: 13px;
+            margin: 0 0 4px;
+            color: var(--muted);
+        }
+
+        .report-row span {
+            color: var(--text);
+            font-weight: 600;
+        }
+
+        .cruces {
+            font-size: 20px;
+            letter-spacing: 2px;
+        }
+
+        .scale-box {
+            margin-top: 10px;
+            padding: 8px 10px;
+            background: rgba(0, 0, 0, 0.35);
+            border-radius: 12px;
+            border: 1px dashed rgba(167, 180, 208, 0.5);
+            font-size: 11px;
+            color: var(--muted);
+        }
+
+        .scale-box b {
+            color: var(--accent);
+        }
+
+        /* Header topbar */
+        .topbar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 16px;
+            padding: 18px 24px;
+            background: rgba(15, 26, 46, 0.8);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: var(--radius);
+            backdrop-filter: blur(10px);
+            margin-bottom: 24px;
+        }
+
+        .brand { display: flex; gap: 14px; align-items: center; }
+
+        .brand .logo {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            font-size: 26px;
+            background: rgba(0, 217, 255, 0.12);
+            border: 1px solid rgba(0, 217, 255, 0.25);
+        }
+
+        .brand h1 { margin: 0; font-size: 20px; }
+
+        .brand p { margin: 4px 0 0; color: var(--muted); font-size: 13px; }
+
+        .top-actions { display: flex; gap: 10px; flex-wrap: wrap; }
+
+        .btn.primary { background: var(--accent); color: #001018; }
+
+        .btn.ghost {
+            background: transparent !important;
+            color: var(--text);
+            border: 1px solid rgba(255, 255, 255, 0.14);
+        }
+
+        .btn.ghost:hover { background: rgba(255, 255, 255, 0.06); }
+
+        /* Sección Cómo funciona */
+        .how { margin-bottom: 32px; }
+
+        .how h2 { font-size: 18px; margin: 0 0 14px; color: var(--text); }
+
+        .how ol {
+            margin: 0;
+            padding-left: 22px;
+            color: var(--muted);
+            font-size: 14px;
+            line-height: 1.7;
+        }
+
+        .how ol li { margin-bottom: 6px; }
+
+        @media (max-width: 900px) {
+            .layout, .grid { grid-template-columns: 1fr; }
+            .topbar { flex-direction: column; align-items: flex-start; }
+        }
+    </style>
+</head>
+<body>
+<div class="container">
+<header class="topbar">
+    <div class="brand">
+        <div class="logo">🧫</div>
+        <div>
+            <h1>Baciloscopía Interactiva</h1>
+            <p>Simulador de práctica: marca bacilos, valida aciertos y exporta resultados.</p>
+        </div>
+    </div>
+
+    <div class="top-actions">
+        <button id="btnStart" class="btn primary">Iniciar práctica</button>
+        <a class="btn ghost" href="#como">Cómo funciona</a>
+        <a class="btn ghost" href="/src/tools/detector.html" target="_blank">Detector de coordenadas</a>
+    </div>
+</header>
+
+<section id="como" class="how">
+    <h2>Cómo funciona</h2>
+    <ol>
+        <li>Selecciona un nivel y observa la muestra.</li>
+        <li>Haz clic sobre los bacilos que identifiques.</li>
+        <li>El sistema valida aciertos/fallos y calcula resultados.</li>
+        <li>Exporta el reporte (JSON) para guardar evidencia.</li>
+    </ol>
+</section>
+
+<main id="practica" class="app">
+    <div class="top-bar">
+        <div>
+            <h1>Baciloscopía Interactiva</h1>
+            <p class="subtitle">
+                Haz clic sobre los bacilos ácido-alcohol resistentes (BAAR). Luego genera el reporte según la escala internacional.
+            </p>
+        </div>
+        <div class="level-badge" id="levelLabel">
+            Nivel 1 de 6 · Dificultad: Básico
+        </div>
+    </div>
+
+    <div class="layout">
+        <!-- LADO IZQUIERDO: IMAGEN + CANVAS OVERLAY -->
+        <div class="card">
+            <div class="imgWrap">
+                <img id="imgMuestra" src="/assets/imagen1.jpeg" alt="Campo microscópico">
+                <canvas id="overlay"></canvas>
+            </div>
+            <div class="toolbar">
+                <div class="small">Bacilos marcados: <b id="count">0</b> · Verde = acierto · Rojo = error</div>
+                <div style="display:flex; gap:10px; flex-wrap: wrap;">
+                    <button id="btnUndo" class="btn ghost">Deshacer</button>
+                    <button id="btnClear" class="btn danger">Limpiar</button>
+                    <button id="btnCopy" class="btn ghost">Copiar JSON</button>
+                    <button id="btnDown" class="btn primary">Descargar JSON</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- LADO DERECHO: ESTADÍSTICAS + REPORTE -->
+        <div class="card">
+            <div>
+                <div class="stat-grid">
+                    <div class="stat">
+                        <div class="stat-label">Bacilos encontrados</div>
+                        <div class="stat-value good" id="aciertos">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Bacilos reales en el campo</div>
+                        <div class="stat-value" id="totalBacilos">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Clics erróneos</div>
+                        <div class="stat-value bad" id="fallos">0</div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-label">Precisión</div>
+                        <div class="stat-value" id="precision">0%</div>
+                    </div>
+                </div>
+
+                <div class="controls">
+                    <button class="btn" id="prevLevel">◀ Nivel anterior</button>
+                    <button class="btn" id="nextLevel">Siguiente nivel ▶</button>
+                    <button class="btn" id="resetLevel">Reiniciar nivel</button>
+                    <button class="btn btn-primary" id="btnReporte">Generar reporte</button>
+                </div>
+
+                <div class="badge-small" id="categoriaNivel">
+                    Categoría esperada: por definir
+                </div>
+            </div>
+
+            <hr style="border-color: rgba(255,255,255,0.06); margin: 12px 0;">
+
+            <div class="report-section" id="reporte">
+                <h3>Reporte del nivel</h3>
+                <p class="report-row">
+                    Conteo realizado por el estudiante: <span id="repTuConteo">0 bacilos</span>
+                </p>
+                <p class="report-row">
+                    Conteo real del campo: <span id="repReal">0 bacilos</span>
+                </p>
+                <p class="report-row">
+                    Diferencia: <span id="repDif">0 bacilos</span>
+                </p>
+                <p class="report-row">
+                    Clasificación según escala internacional:
+                    <span class="cruces" id="repCruces">(-)</span>
+                </p>
+                <p class="report-row">
+                    Informe: <span id="repInforme">—</span>
+                </p>
+                <p class="report-row">
+                    Interpretación / viabilidad: <span id="repViabilidad">—</span>
+                </p>
+                <p class="report-row">
+                    Coordenadas bacilos detectados: <span id="repCoordsDet">—</span>
+                </p>
+                <p class="report-row">
+                    Coordenadas bacilos reales: <span id="repCoordsReal">—</span>
+                </p>
+
+                <div class="scale-box">
+                    <b>Escala internacional para resultados de baciloscopia (resumen):</b><br>
+                    (-) Negativo → 0 BAAR en 100 campos.<br>
+                    Número exacto → 1-9 BAAR en 100 campos.<br>
+                    (+) Una cruz → 10-99 BAAR en 100 campos.<br>
+                    (++) Dos cruces → 1-10 BAAR por campo en 50 campos.<br>
+                    (+++) Tres cruces → &gt;10 BAAR por campo en 20 campos.
+                </div>
+            </div>
+        </div>
+    </div>
+</main>
+</div>
+
+<script>
+    // 🔢 Escala internacional (resumen)
+    const ESCALA = {
+        "negativo": {
+            simbolo: "(-)",
+            informe: "No se observan BAAR en los campos microscópicos observados."
+        },
+        "1-9": {
+            simbolo: "1-9",
+            informe: "Se observan de 1 a 9 BAAR en los campos microscópicos observados (se reporta el número exacto)."
+        },
+        "+": {
+            simbolo: "(+)",
+            informe: "Se observan de 10 a 99 BAAR en los campos microscópicos observados."
+        },
+        "++": {
+            simbolo: "(++)",
+            informe: "Se observan de 1 a 10 BAAR por campo en varios campos microscópicos observados."
+        },
+        "+++": {
+            simbolo: "(+++)",
+            informe: "Se observan más de 10 BAAR por campo en varios campos microscópicos observados."
+        }
+    };
+
+    // 🧪 Configuración de niveles con TUS coordenadas
+    const niveles = [
+        {
+            id: 1,
+            nombre: "Campo 1",
+            dificultad: "Básico",
+            imagen: "/assets/imagen1.jpeg",
+            categoriaEscala: "+",
+            viabilidad: "Muestra positiva con presencia clara de BAAR.",
+            bacilos: [
+                {x: 359, y: 208, found: false},
+                {x: 225, y: 254, found: false},
+                {x: 305, y: 262, found: false},
+                {x: 269, y: 272, found: false},
+                {x: 183, y: 296, found: false},
+                {x: 373, y: 324, found: false},
+                {x: 413, y: 318, found: false},
+                {x: 429, y: 312, found: false},
+                {x: 279, y: 346, found: false},
+                {x: 211, y: 366, found: false},
+                {x: 139, y: 364, found: false},
+                {x: 355, y: 398, found: false},
+                {x: 371, y: 388, found: false}
+            ]
+        },
+        {
+            id: 2,
+            nombre: "Campo 2",
+            dificultad: "Básico",
+            imagen: "/assets/imagen2.jpeg",
+            categoriaEscala: "1-9",
+            viabilidad: "Pocos BAAR visibles; bacilos aislados en una muestra con fondo limpio.",
+            bacilos: [
+                {x: 465, y: 527, found: false},
+                {x: 455, y: 547, found: false},
+                {x: 451, y: 571, found: false}
+            ]
+        },
+        {
+            id: 3,
+            nombre: "Campo 3",
+            dificultad: "Intermedio",
+            imagen: "/assets/imagen3.jpeg",
+            categoriaEscala: "+",
+            viabilidad: "Múltiples BAAR distribuidos en el campo, morfología típica.",
+            bacilos: [
+                {x: 18,  y: 68,  found: false},
+                {x: 26,  y: 88,  found: false},
+                {x: 138, y: 110, found: false},
+                {x: 154, y: 120, found: false},
+                {x: 208, y: 56,  found: false},
+                {x: 232, y: 64,  found: false},
+                {x: 391, y: 86,  found: false},
+                {x: 289, y: 140, found: false},
+                {x: 253, y: 214, found: false},
+                {x: 299, y: 274, found: false},
+                {x: 481, y: 266, found: false},
+                {x: 199, y: 232, found: false},
+                {x: 119, y: 218, found: false},
+                {x: 117, y: 230, found: false},
+                {x: 57,  y: 208, found: false},
+                {x: 27,  y: 298, found: false}
+            ]
+        },
+        {
+            id: 4,
+            nombre: "Campo 4",
+            dificultad: "Intermedio",
+            imagen: "/assets/imagen4.jpeg",
+            categoriaEscala: "++",
+            viabilidad: "Conteo abundante de BAAR; campo claramente positivo.",
+            bacilos: [
+                {x: 539, y: 26,  found: false},
+                {x: 579, y: 80,  found: false},
+                {x: 407, y: 58,  found: false},
+                {x: 533, y: 134, found: false},
+                {x: 490, y: 160, found: false},
+                {x: 456, y: 190, found: false},
+                {x: 332, y: 138, found: false},
+                {x: 312, y: 160, found: false},
+                {x: 208, y: 198, found: false},
+                {x: 198, y: 222, found: false},
+                {x: 92,  y: 214, found: false},
+                {x: 148, y: 148, found: false},
+                {x: 128, y: 136, found: false},
+                {x: 144, y: 356, found: false},
+                {x: 64,  y: 404, found: false},
+                {x: 90,  y: 402, found: false}
+            ]
+        },
+        {
+            id: 5,
+            nombre: "Campo 5",
+            dificultad: "Intermedio",
+            imagen: "/assets/imagen5.jpeg",
+            categoriaEscala: "+++",
+            viabilidad: "Alta carga bacilar con numerosos BAAR.",
+            bacilos: [
+                {x: 853, y: 494, found: false},
+                {x: 859, y: 562, found: false},
+                {x: 481, y: 514, found: false},
+                {x: 421, y: 538, found: false},
+                {x: 409, y: 516, found: false},
+                {x: 309, y: 510, found: false},
+                {x: 299, y: 528, found: false},
+                {x: 293, y: 550, found: false},
+                {x: 239, y: 512, found: false},
+                {x: 307, y: 640, found: false},
+                {x: 495, y: 574, found: false},
+                {x: 479, y: 560, found: false},
+                {x: 469, y: 526, found: false},
+                {x: 409, y: 534, found: false},
+                {x: 553, y: 784, found: false},
+                {x: 457, y: 798, found: false},
+                {x: 389, y: 820, found: false},
+                {x: 373, y: 762, found: false},
+                {x: 255, y: 732, found: false},
+                {x: 263, y: 778, found: false},
+                {x: 325, y: 850, found: false},
+                {x: 769, y: 870, found: false},
+                {x: 723, y: 770, found: false},
+                {x: 659, y: 784, found: false},
+                {x: 651, y: 714, found: false},
+                {x: 621, y: 684, found: false},
+                {x: 679, y: 660, found: false},
+                {x: 869, y: 564, found: false},
+                {x: 849, y: 488, found: false}
+            ]
+        },
+        {
+            id: 6,
+            nombre: "Campo 6",
+            dificultad: "Avanzado",
+            imagen: "/assets/imagen7.jpeg",
+            categoriaEscala: "+++",
+            viabilidad: "Campo con abundantes BAAR; muestra fuertemente positiva.",
+            bacilos: [
+                {x: 186, y: 180, found: false},
+                {x: 203, y: 196, found: false},
+                {x: 227, y: 204, found: false},
+                {x: 267, y: 210, found: false},
+                {x: 313, y: 232, found: false},
+                {x: 391, y: 286, found: false},
+                {x: 417, y: 308, found: false},
+                {x: 427, y: 324, found: false},
+                {x: 443, y: 354, found: false},
+                {x: 445, y: 366, found: false},
+                {x: 193, y: 518, found: false},
+                {x: 181, y: 536, found: false},
+                {x: 379, y: 196, found: false},
+                {x: 369, y: 166, found: false},
+                {x: 203, y: 278, found: false},
+                {x: 205, y: 288, found: false},
+                {x: 211, y: 310, found: false},
+                {x: 189, y: 374, found: false},
+                {x: 139, y: 310, found: false},
+                {x: 207, y: 296, found: false},
+                {x: 277, y: 296, found: false},
+                {x: 313, y: 290, found: false},
+                {x: 357, y: 394, found: false},
+                {x: 437, y: 470, found: false},
+                {x: 525, y: 480, found: false}
+            ]
+        }
+    ];
+
+    // 🌐 Estado del juego
+    let nivelActual = 0;
+    let aciertos = 0;
+    let fallos = 0;
+    let escalaX = 1;
+    let escalaY = 1;
+
+    const img = document.getElementById("imgMuestra");
+    const canvas = document.getElementById("overlay");
+    const ctx = canvas.getContext("2d");
+    const countEl = document.getElementById("count");
+    const btnUndo = document.getElementById("btnUndo");
+    const btnClear = document.getElementById("btnClear");
+    const btnCopy = document.getElementById("btnCopy");
+    const btnDown = document.getElementById("btnDown");
+
+    let clicks = []; // {x, y, ok, baciloIndex}
+    const levelLabel = document.getElementById("levelLabel");
+    const categoriaNivel = document.getElementById("categoriaNivel");
+
+    const aciertosTxt = document.getElementById("aciertos");
+    const fallosTxt = document.getElementById("fallos");
+    const totalBacilosTxt = document.getElementById("totalBacilos");
+    const precisionTxt = document.getElementById("precision");
+
+    const repTuConteo = document.getElementById("repTuConteo");
+    const repReal = document.getElementById("repReal");
+    const repDif = document.getElementById("repDif");
+    const repCruces = document.getElementById("repCruces");
+    const repInforme = document.getElementById("repInforme");
+    const repViabilidad = document.getElementById("repViabilidad");
+    const repCoordsDet = document.getElementById("repCoordsDet");
+    const repCoordsReal = document.getElementById("repCoordsReal");
+
+    const btnPrev = document.getElementById("prevLevel");
+    const btnNext = document.getElementById("nextLevel");
+    const btnReset = document.getElementById("resetLevel");
+    const btnReporte = document.getElementById("btnReporte");
+    const btnStart = document.getElementById("btnStart");
+
+    // 🚀 Inicializar
+    img.addEventListener("load", function () { actualizarEscala(); resizeCanvas(); });
+    img.addEventListener("error", function () {
+        console.error("No se pudo cargar la imagen:", img.src);
+        alert("No se pudo cargar la imagen del campo. Verifica que la ruta sea correcta y que uses un servidor (ej: npm run dev).");
+    });
+    window.addEventListener("resize", function () { actualizarEscala(); resizeCanvas(); });
+    cargarNivel(0);
+    if (img.complete) resizeCanvas();
+
+    // 👉 Click sobre la imagen
+    img.addEventListener("click", function (event) {
+        const rect = img.getBoundingClientRect();
+        const clickX = event.clientX - rect.left;
+        const clickY = event.clientY - rect.top;
+
+        // Convertimos el clic al sistema de coordenadas "real" de la imagen original
+        const realX = clickX / escalaX;
+        const realY = clickY / escalaY;
+
+        const nivel = niveles[nivelActual];
+        let encontrado = false;
+
+        for (let bacilo of nivel.bacilos) {
+            if (bacilo.found) continue;
+
+            const dx = realX - bacilo.x;
+            const dy = realY - bacilo.y;
+            const distancia = Math.sqrt(dx * dx + dy * dy);
+
+            // Radio más grande para que cuente mejor los clics (28 px aprox)
+            if (distancia < 28) {
+                bacilo.found = true;
+                bacilo.clickX = realX;
+                bacilo.clickY = realY;
+                aciertos++;
+                encontrado = true;
+                const idx = nivel.bacilos.indexOf(bacilo);
+                clicks.push({ x: clickX, y: clickY, ok: true, baciloIndex: idx });
+                redrawCanvas();
+                break;
+            }
+        }
+
+        if (!encontrado) {
+            fallos++;
+            clicks.push({ x: clickX, y: clickY, ok: false, baciloIndex: -1 });
+            redrawCanvas();
+        }
+
+        actualizarPanel();
+    });
+
+    // 🔘 Botones de navegación / control
+    btnPrev.addEventListener("click", function () {
+        if (nivelActual > 0) {
+            cargarNivel(nivelActual - 1);
+        }
+    });
+
+    btnNext.addEventListener("click", function () {
+        if (nivelActual < niveles.length - 1) {
+            cargarNivel(nivelActual + 1);
+        }
+    });
+
+    btnReset.addEventListener("click", reiniciarNivel);
+
+    btnUndo.addEventListener("click", function () {
+        if (clicks.length === 0) return;
+        const last = clicks.pop();
+        if (last.ok && last.baciloIndex >= 0) {
+            const nivel = niveles[nivelActual];
+            nivel.bacilos[last.baciloIndex].found = false;
+            nivel.bacilos[last.baciloIndex].clickX = null;
+            nivel.bacilos[last.baciloIndex].clickY = null;
+            aciertos--;
+        } else {
+            fallos--;
+        }
+        redrawCanvas();
+        actualizarPanel();
+    });
+
+    btnClear.addEventListener("click", reiniciarNivel);
+
+    // 📤 Exportar resultados
+    function buildReport() {
+        const nivel = niveles[nivelActual];
+        return {
+            totalMarcados: clicks.length,
+            aciertos: aciertos,
+            fallos: fallos,
+            precision: nivel.bacilos.length > 0 ? Math.round((aciertos / nivel.bacilos.length) * 100) : 0,
+            nivel: nivelActual + 1,
+            nombreNivel: nivel.nombre,
+            coords: clicks.map(p => ({ x: Math.round(p.x), y: Math.round(p.y), ok: p.ok })),
+            timestamp: new Date().toISOString()
+        };
+    }
+
+    btnCopy.addEventListener("click", async function () {
+        try {
+            await navigator.clipboard.writeText(JSON.stringify(buildReport(), null, 2));
+            alert("✅ JSON copiado");
+        } catch (e) {
+            alert("No se pudo copiar: " + e.message);
+        }
+    });
+
+    btnDown.addEventListener("click", function () {
+        const data = buildReport();
+        const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
+        const a = document.createElement("a");
+        a.href = URL.createObjectURL(blob);
+        a.download = "reporte_bacilos.json";
+        a.click();
+        setTimeout(function () { URL.revokeObjectURL(a.href); }, 100);
+    });
+
+    btnReporte.addEventListener("click", function () {
+        generarReporte();
+    });
+
+    btnStart.addEventListener("click", function () {
+        document.getElementById("practica").scrollIntoView({ behavior: "smooth" });
+    });
+
+    // 🔧 Actualizar escala imagen / coordenadas
+    function actualizarEscala() {
+        const natW = img.naturalWidth || 1;
+        const natH = img.naturalHeight || 1;
+        const rect = img.getBoundingClientRect();
+        escalaX = rect.width / natW;
+        escalaY = rect.height / natH;
+    }
+
+    // 📥 Cargar un nivel concreto
+    function cargarNivel(index) {
+        nivelActual = index;
+        const nivel = niveles[nivelActual];
+
+        // Reset estado
+        aciertos = 0;
+        fallos = 0;
+        nivel.bacilos.forEach(b => {
+            b.found = false;
+            b.clickX = null;
+            b.clickY = null;
+        });
+
+        // Cambiar imagen
+        img.src = nivel.imagen;
+
+        // Actualizar textos
+        const escConf = ESCALA[nivel.categoriaEscala];
+        const simbolo = escConf ? escConf.simbolo : nivel.categoriaEscala;
+
+        levelLabel.textContent = `${nivel.nombre} · Nivel ${nivelActual + 1} de ${niveles.length} · Dificultad: ${nivel.dificultad}`;
+        categoriaNivel.textContent = `Categoría esperada según la escala internacional: ${simbolo}`;
+
+        // Limpiar marcas y reporte
+        clicks = [];
+        redrawCanvas();
+        actualizarPanel();
+        limpiarReporte();
+    }
+
+    // 🔄 Reiniciar sólo el nivel actual
+    function reiniciarNivel() {
+        const nivel = niveles[nivelActual];
+        aciertos = 0;
+        fallos = 0;
+        nivel.bacilos.forEach(b => {
+            b.found = false;
+            b.clickX = null;
+            b.clickY = null;
+        });
+        clicks = [];
+        redrawCanvas();
+        actualizarPanel();
+        limpiarReporte();
+    }
+
+    // 🎯 Canvas overlay: dibujar puntos
+    function resizeCanvas() {
+        canvas.width = img.clientWidth;
+        canvas.height = img.clientHeight;
+        redrawCanvas();
+    }
+
+    function redrawCanvas() {
+        ctx.clearRect(0, 0, canvas.width, canvas.height);
+        clicks.forEach(function (p) {
+            ctx.beginPath();
+            ctx.arc(p.x, p.y, 10, 0, Math.PI * 2);
+            ctx.fillStyle = p.ok ? "rgba(34,197,94,0.5)" : "rgba(255,77,77,0.5)";
+            ctx.fill();
+            ctx.lineWidth = 2;
+            ctx.strokeStyle = p.ok ? "rgba(34,197,94,0.95)" : "rgba(255,77,77,0.95)";
+            ctx.stroke();
+        });
+        countEl.textContent = clicks.length;
+    }
+
+    // 📊 Actualizar estadísticas
+    function actualizarPanel() {
+        const nivel = niveles[nivelActual];
+        const total = nivel.bacilos.length;
+
+        aciertosTxt.textContent = aciertos;
+        fallosTxt.textContent = fallos;
+        totalBacilosTxt.textContent = total;
+
+        let precision = 0;
+        if (total > 0) {
+            precision = Math.round((aciertos / total) * 100);
+        }
+        precisionTxt.textContent = precision + "%";
+    }
+
+    // 📝 Generar reporte para el nivel actual
+    function generarReporte() {
+        const nivel = niveles[nivelActual];
+        const totalReal = nivel.bacilos.length;
+        const tuConteo = aciertos;  // bacilos correctos encontrados
+        const dif = Math.abs(totalReal - tuConteo);
+        const escConf = ESCALA[nivel.categoriaEscala] || {simbolo: nivel.categoriaEscala, informe: "—"};
+        const simbolo = escConf.simbolo;
+
+        repTuConteo.textContent = `${tuConteo} bacilos`;
+        repReal.textContent = `${totalReal} bacilos`;
+        repDif.textContent = `${dif} bacilos`;
+
+        repCruces.textContent = simbolo;
+        repInforme.textContent = escConf.informe;
+
+        // Interpretación / viabilidad + desempeño del estudiante
+        const precision = totalReal > 0 ? Math.round((tuConteo / totalReal) * 100) : 0;
+        const detalleAlumno =
+            `El estudiante identificó ${tuConteo} de ${totalReal} bacilos reales ` +
+            `(${precision}% de precisión) con ${fallos} clic(s) erróneo(s).`;
+        repViabilidad.textContent = (nivel.viabilidad ? nivel.viabilidad + " " : "") + detalleAlumno;
+
+        // Coordenadas de bacilos
+        const coordsDet = nivel.bacilos
+            .filter(b => b.found)
+            .map(b => `(${b.x.toFixed(0)}, ${b.y.toFixed(0)})`)
+            .join(" · ");
+        const coordsReal = nivel.bacilos
+            .map(b => `(${b.x}, ${b.y})`)
+            .join(" · ");
+
+        repCoordsDet.textContent = coordsDet || "Ningún bacilo detectado correctamente.";
+        repCoordsReal.textContent = coordsReal || "No hay bacilos configurados para este campo.";
+    }
+
+    function limpiarReporte() {
+        repTuConteo.textContent = "0 bacilos";
+        repReal.textContent = "0 bacilos";
+        repDif.textContent = "0 bacilos";
+        repCruces.textContent = "(-)";
+        repInforme.textContent = "Genera el reporte para este campo cuando termines tu conteo.";
+        repViabilidad.textContent = "—";
+        repCoordsDet.textContent = "—";
+        repCoordsReal.textContent = "—";
+    }
+</script>
+
+</body>
+</html>

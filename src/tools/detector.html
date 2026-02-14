@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Obtener Coordenadas</title>
+    <style>
+        body {
+            font-family: Arial;
+            background: #101820;
+            color: #fff;
+            text-align: center;
+            padding: 20px;
+        }
+        #image {
+            border: 2px solid #00d9ff;
+            cursor: crosshair;
+            max-width: 90vw;
+        }
+        #coords {
+            margin-top: 20px;
+            padding: 10px;
+            border: 1px solid #00d9ff;
+            background: #112230;
+            width: 50%;
+            margin-left: auto;
+            margin-right: auto;
+            min-height: 80px;
+        }
+    </style>
+</head>
+<body>
+
+    <h2>Visor para obtener coordenadas de bacilos</h2>
+
+    <input type="file" id="upload" accept="image/*"><br><br>
+
+    <img id="image">
+
+    <div id="coords">
+        <h3>Coordenadas detectadas:</h3>
+        <pre id="output">Haz clic en la imagen…</pre>
+    </div>
+
+    <script>
+        const upload = document.getElementById('upload');
+        const image = document.getElementById('image');
+        const output = document.getElementById('output');
+
+        let coordsArray = [];
+
+        upload.addEventListener('change', function () {
+            const file = upload.files[0];
+            image.src = URL.createObjectURL(file);
+            coordsArray = [];
+            output.textContent = "Imagen cargada. Haz clic en los bacilos.";
+        });
+
+        image.addEventListener('click', function (event) {
+            const rect = image.getBoundingClientRect();
+            const x = Math.round(event.clientX - rect.left);
+            const y = Math.round(event.clientY - rect.top);
+
+            coordsArray.push({ x, y });
+
+            output.textContent = JSON.stringify(coordsArray, null, 2);
+        });
+    </script>
+
+</body>
+</html>
